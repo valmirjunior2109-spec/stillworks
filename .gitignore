@@ -3,3 +3,11 @@ dist/
 verify-report/
 *.log
 .DS_Store
+
+# Secrets: never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.npmrc
