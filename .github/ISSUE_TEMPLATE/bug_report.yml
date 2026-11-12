@@ -1,0 +1,46 @@
+name: Bug report
+description: stillworks did something wrong, crashed, or reported the wrong thing
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks! Please remove secrets, emails and internal URLs before posting.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: The command you ran and what it printed.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: The journey (from journeys.config.ts)
+      render: ts
+  - type: input
+    id: version
+    attributes:
+      label: stillworks version
+      placeholder: npx stillworks --version
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options: [macOS, Windows, Linux, CI (say which below)]
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: node --version

@@ -1,0 +1,50 @@
+# Runs your journeys against every successful preview deploy (Vercel, Netlify, or anything that
+# reports a GitHub deployment) and attaches REPORT.md + screenshots to the run.
+# Copy to .github/workflows/stillworks.yml (or run: npx stillworks init --github).
+#
+# Vercel Deployment Protection: create a "Protection Bypass for Automation" secret in Vercel and
+# save it as the repo secret VERCEL_AUTOMATION_BYPASS_SECRET. stillworks sends it only to your preview's origin.
+name: stillworks
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  journeys:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Chromium
+        run: npx --yes stillworks@0 install --with-deps
+
+      - name: Run journeys against the preview
+        env:
+          PREVIEW_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          args=(run --url "$PREVIEW_URL" --no-promo)
+          if [ -n "$BYPASS" ]; then args+=(--header "x-vercel-protection-bypass: $BYPASS"); fi
+          npx --yes stillworks@0 "${args[@]}"
+
+      - name: Add the report to the run summary
+        if: always()
+        run: if [ -f verify-report/REPORT.md ]; then cat verify-report/REPORT.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verify-report
+          path: verify-report
+          if-no-files-found: ignore

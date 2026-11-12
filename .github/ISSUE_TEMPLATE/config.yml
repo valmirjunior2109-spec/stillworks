@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Want journeys checked automatically on every AI change?
+    url: https://getpublishub.com/?utm_source=gh_issues
+    about: Publishub is building hosted runs with regression diffs (coming soon). Join the free waitlist.

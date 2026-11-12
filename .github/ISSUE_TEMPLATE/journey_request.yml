@@ -1,0 +1,38 @@
+name: Journey request
+description: Ask for a ready-made journey for your stack (auth provider, payments, onboarding…)
+labels: [journey-request]
+body:
+  - type: markdown
+    attributes:
+      value: Tell us which flow you want to check and we'll try to add a template for it.
+  - type: input
+    id: flow
+    attributes:
+      label: Which flow?
+      placeholder: e.g. Sign up with a Supabase magic link, Stripe Checkout in test mode, inviting a teammate
+    validations:
+      required: true
+  - type: input
+    id: stack
+    attributes:
+      label: Your stack
+      placeholder: e.g. Next.js 16 + Supabase + Stripe, deployed on Vercel
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: The steps a user takes
+      description: As a person would describe them. Screenshots welcome.
+      placeholder: |
+        1. Open /signup
+        2. Enter an email
+        3. Click the link in the email
+        4. Land on /onboarding
+    validations:
+      required: true
+  - type: textarea
+    id: broke
+    attributes:
+      label: Has this flow broken after an AI change before?
+      description: Optional. What broke and how you found out helps us write better checks.

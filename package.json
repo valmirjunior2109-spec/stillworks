@@ -1,0 +1,64 @@
+{
+  "name": "stillworks",
+  "version": "0.1.0",
+  "description": "Your AI writes the code. This checks it still works. Run your critical user journeys (signup, login, checkout) in a real browser and get a bug report your coding agent can fix.",
+  "keywords": [
+    "playwright",
+    "e2e-testing",
+    "claude-code",
+    "cursor",
+    "ai-coding",
+    "vibe-coding",
+    "regression-testing",
+    "developer-tools",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "Publishub (https://getpublishub.com)",
+  "homepage": "https://github.com/valmirjunior2109-spec/stillworks#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valmirjunior2109-spec/stillworks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/valmirjunior2109-spec/stillworks/issues"
+  },
+  "type": "module",
+  "bin": {
+    "stillworks": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "integrations"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/unit.test.mjs test/e2e.test.mjs",
+    "test:unit": "npm run build && node --test test/unit.test.mjs",
+    "demo": "node examples/demo-app/server.mjs",
+    "demo:broken": "node examples/demo-app/server.mjs --break=signup",
+    "social-preview": "node scripts/social-preview.mjs",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "jiti": "^2.7.0",
+    "playwright": "^1.65.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.9.3"
+  }
+}
