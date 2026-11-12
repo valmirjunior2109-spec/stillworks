@@ -19,7 +19,7 @@ npx stillworks init
 
 **2/5**
 
-The bug I kept shipping with Claude Code and Cursor:
+The bug AI agents ship most quietly:
 
 Code compiles. Lint passes. Tests pass.
 Signup is broken anyway, because the agent "cleaned up" a file it wasn't supposed to touch.

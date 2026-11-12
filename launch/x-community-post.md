@@ -4,7 +4,7 @@ For Build in Public, Indie Hackers, SaaS, Claude Code or Cursor communities. Att
 
 ---
 
-I kept shipping AI-written code that passed every test and still broke signup.
+AI-written code can pass every test and still break signup.
 
 So I built stillworks (open source): it runs your critical flows in a real browser and hands your agent a fix-ready report.
 

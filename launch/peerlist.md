@@ -29,4 +29,4 @@ It's made by the team building Publishub, which will run these checks automatica
 
 **First comment (post it yourself after launching)**
 
-Hey Peerlist 👋 I built this after shipping one too many "all tests green" commits that broke signup. Try it on the demo app in the repo: `npm run demo:broken`, then run the journeys and watch it catch the bug. What flow should I add a template for next?
+Hey Peerlist 👋 I built this for the "all tests green, signup broken" commits AI agents can produce. Try it on the demo app in the repo: `npm run demo:broken`, then run the journeys and watch it catch the bug. What flow should I add a template for next?
