@@ -40,6 +40,13 @@ Node.js 20 or newer. The tests start the demo app themselves; you don't need any
 - Add a test for behavior changes. End-to-end tests go in `test/e2e.test.mjs` and use the demo app.
 - Write user-facing text in plain English, short sentences, no jargon.
 
+## Releasing (maintainers)
+
+1. Bump `version` in `package.json` and commit.
+2. `git tag v<version> && git push --tags`
+
+The Release workflow runs the tests and publishes to npm with trusted publishing. No npm token is involved.
+
 ## Reporting bugs
 
 Use the [bug report template](https://github.com/valmirjunior2109-spec/stillworks/issues/new?template=bug_report.yml). Include your OS, Node version, the command you ran and the relevant part of `verify-report/REPORT.md`. **Remove secrets, emails and internal URLs first.**

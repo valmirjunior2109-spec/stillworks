@@ -1,0 +1,30 @@
+# Publishes to npm when a version tag is pushed (git tag v0.1.1 && git push --tags).
+# Uses npm trusted publishing (OIDC): no npm token is stored in GitHub, and the package gets provenance.
+# One-time setup on npmjs.com: package → Settings → Trusted publishing → GitHub Actions,
+# user "valmirjunior2109-spec", repository "stillworks", workflow "release.yml".
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Check the tag matches package.json
+        run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm publish --access public
