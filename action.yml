@@ -1,0 +1,92 @@
+name: "stillworks: user journey checks"
+description: "Your AI writes the code, this checks it still works: runs signup, login and checkout in a real browser and writes a report your agent can fix."
+author: "Publishub"
+branding:
+  icon: check-circle
+  color: purple
+
+inputs:
+  url:
+    description: "The app to check, e.g. a preview deployment URL."
+    required: true
+  config:
+    description: "Path to your journeys file."
+    required: false
+    default: "journeys.config.ts"
+  journeys:
+    description: "Only run these journeys (space-separated names). Empty runs them all."
+    required: false
+    default: ""
+  headers:
+    description: 'Headers sent only to your app''s origin, one "name: value" per line (e.g. x-vercel-protection-bypass).'
+    required: false
+    default: ""
+  version:
+    description: "The stillworks version from npm."
+    required: false
+    default: "0"
+  working-directory:
+    description: "Where journeys.config.ts lives."
+    required: false
+    default: "."
+  artifact-name:
+    description: "Name of the uploaded report artifact. Change it when the action runs more than once in a job."
+    required: false
+    default: "stillworks-report"
+
+outputs:
+  result:
+    description: "passed or failed."
+    value: ${{ steps.run.outputs.result }}
+  report:
+    description: "Path to REPORT.md."
+    value: ${{ steps.run.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Chromium
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        STILLWORKS_VERSION: ${{ inputs.version }}
+      run: npx --yes "stillworks@${STILLWORKS_VERSION}" install --with-deps
+
+    - name: Run journeys
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      # Inputs reach the script as environment variables, never as text inside it, so nothing in them can run.
+      env:
+        STILLWORKS_VERSION: ${{ inputs.version }}
+        STILLWORKS_URL: ${{ inputs.url }}
+        STILLWORKS_CONFIG: ${{ inputs.config }}
+        STILLWORKS_JOURNEYS: ${{ inputs.journeys }}
+        STILLWORKS_HEADERS: ${{ inputs.headers }}
+      run: |
+        args=(run --url "$STILLWORKS_URL" --config "$STILLWORKS_CONFIG" --no-promo)
+        for journey in $STILLWORKS_JOURNEYS; do args+=(--journey "$journey"); done
+        while IFS= read -r header; do
+          [ -n "${header// }" ] && args+=(--header "$header")
+        done <<< "$STILLWORKS_HEADERS"
+        set +e
+        npx --yes "stillworks@${STILLWORKS_VERSION}" "${args[@]}"
+        code=$?
+        set -e
+        if [ "$code" = "0" ]; then echo "result=passed" >> "$GITHUB_OUTPUT"; else echo "result=failed" >> "$GITHUB_OUTPUT"; fi
+        echo "report=$(pwd)/verify-report/REPORT.md" >> "$GITHUB_OUTPUT"
+        exit "$code"
+
+    - name: Add the report to the run summary
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: if [ -f verify-report/REPORT.md ]; then cat verify-report/REPORT.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+    - name: Upload the report and screenshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.working-directory }}/verify-report
+        if-no-files-found: ignore

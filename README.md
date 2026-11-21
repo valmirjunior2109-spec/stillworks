@@ -116,6 +116,15 @@ Tips:
 | `headers` | `{}` | Headers sent only to your app's origin, e.g. a preview protection bypass. |
 | `viewport` | `1280×800` | Browser size. |
 
+## Recipes
+
+Ready-made journeys for the bugs that slip past a green build, each tested against the demo app:
+
+- **[Read the data back](recipes/read-the-data-back.ts):** catches a form that says "Saved!" while nothing was saved, like a Supabase insert blocked by row-level security (RLS) whose error the code never checks.
+- **[Log in with a test account](recipes/login-with-test-account.ts):** credentials from environment variables, never written in the file.
+
+More in [recipes/](recipes/README.md).
+
 ## Use it with your agent
 
 **Claude Code**
@@ -127,6 +136,17 @@ Tips:
 **Codex, GitHub Copilot, Windsurf:** paste [this section](integrations/agents-md/AGENTS.md) into your `AGENTS.md`.
 
 **GitHub Actions + Vercel previews:** `npx stillworks init --github` adds a [workflow](integrations/github-actions/stillworks.yml). It runs your journeys against every successful preview deploy and puts the report in the run summary. Deployment Protection is supported.
+
+Or use the action in a workflow you already have:
+
+```yaml
+- uses: valmirjunior2109-spec/stillworks@v0.1.3
+  with:
+    url: ${{ github.event.deployment_status.environment_url }}
+    # optional: config, journeys ("signup login"), headers ("x-vercel-protection-bypass: ..."), working-directory
+```
+
+It installs Chromium, runs the journeys, fails the job when one breaks, adds `REPORT.md` to the run summary and uploads the screenshots. Outputs: `result` (`passed` or `failed`) and `report`.
 
 ## Show it in your README
 

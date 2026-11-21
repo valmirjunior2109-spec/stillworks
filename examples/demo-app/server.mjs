@@ -1,13 +1,18 @@
-// A tiny app with signup, login and checkout, for trying stillworks and for its tests.
+// A tiny app with signup, login, checkout and notes, for trying stillworks and for its tests.
 //   node examples/demo-app/server.mjs                 everything works
 //   node examples/demo-app/server.mjs --break=signup  the kind of bug an AI agent ships: the signup API
 //                                                     was "refactored" to read `emailAddress`, the form
 //                                                     still sends `email`, and signup silently stops working.
+//   node examples/demo-app/server.mjs --break=save    the notes API answers 200 but stores nothing, like a
+//                                                     Supabase insert blocked by row-level security whose
+//                                                     error the code never reads. The "Saved" toast still shows.
 // PORT=4173 by default; PORT=0 picks a free port. Prints "demo app ready on <url>" when listening.
 import { createServer } from "node:http";
 
 const broken = new Set(process.argv.filter((a) => a.startsWith("--break=")).flatMap((a) => a.slice(8).split(",")));
 const users = new Map([["demo@example.com", "demo-password"]]);
+const notes = [];
+const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const page = (title, body) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -39,7 +44,7 @@ const form = (id, title, fields, button, endpoint, onSuccess) => page(title, `
 </script>`);
 
 const routes = {
-  "GET /": () => page("Home", `<h1>Demo SaaS</h1><nav><a href="/signup">Sign up</a><a href="/login">Log in</a><a href="/checkout">Pricing</a></nav>
+  "GET /": () => page("Home", `<h1>Demo SaaS</h1><nav><a href="/signup">Sign up</a><a href="/login">Log in</a><a href="/checkout">Pricing</a><a href="/notes">Notes</a></nav>
     <p class="note">A demo app for stillworks. Start it with --break=signup to see a broken journey.</p>`),
   "GET /signup": () => form("signup", "Create your account", [["Email", "email", "email"], ["Password", "password", "password"]], "Create account", "/api/signup",
     "`<h1>Welcome, ${json.email}!</h1><p class='note'>Your account is ready.</p>`"),
@@ -47,6 +52,27 @@ const routes = {
     "`<h1>Dashboard</h1><p class='note'>Signed in as ${json.email}.</p>`"),
   "GET /checkout": () => form("checkout", "Pro plan · $19/month", [["Card number", "card", "text"]], "Pay $19", "/api/checkout",
     "`<h1>Payment successful</h1><p class='note'>Receipt ${json.receipt}.</p>`"),
+  "GET /notes": () => page("Notes", `<h1>Notes</h1>
+<form id="notes-form">
+  <label for="text">Note</label><input id="text" name="text" type="text" required>
+  <button type="submit">Save note</button>
+</form>
+<p id="status" class="note" role="status"></p>
+<ul id="notes">${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
+<script>
+  document.getElementById("notes-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const text = new FormData(event.target).get("text");
+    const res = await fetch("/api/notes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+    // Like most AI-written Supabase code: the response is never checked for a real write.
+    if (res.ok) document.getElementById("status").textContent = "Saved!";
+  });
+</script>`),
+  "POST /api/notes": (body) => {
+    // The bug: the write is rejected (think row-level security), but the handler still answers 200.
+    if (!broken.has("save")) notes.push(String(body.text ?? ""));
+    return [200, { saved: true }];
+  },
   "POST /api/signup": (body) => {
     // The "refactor": the handler now reads `emailAddress`, but the form still sends `email`.
     const email = broken.has("signup") ? body.emailAddress.toLowerCase() : String(body.email).toLowerCase();

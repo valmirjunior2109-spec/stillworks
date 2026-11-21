@@ -30,3 +30,46 @@ jobs:
       - name: Check the package contents
         if: matrix.os == 'ubuntu-latest' && matrix.node == 24
         run: npm pack --dry-run
+
+  action:
+    name: GitHub Action (uses ./)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Start the demo app, healthy and broken
+        run: |
+          PORT=4173 node examples/demo-app/server.mjs &
+          PORT=4174 node examples/demo-app/server.mjs --break=signup &
+          for port in 4173 4174; do
+            for i in $(seq 1 30); do curl -sf "http://127.0.0.1:$port/" > /dev/null && break; sleep 1; done
+          done
+      - name: A healthy app passes
+        id: healthy
+        uses: ./
+        with:
+          url: http://127.0.0.1:4173
+          config: templates/journeys.config.ts
+          artifact-name: report-healthy
+      - name: A broken signup fails
+        id: broken
+        continue-on-error: true
+        uses: ./
+        with:
+          url: http://127.0.0.1:4174
+          config: templates/journeys.config.ts
+          journeys: signup login
+          artifact-name: report-broken
+      - name: Check the outputs
+        env:
+          HEALTHY: ${{ steps.healthy.outputs.result }}
+          BROKEN: ${{ steps.broken.outputs.result }}
+          BROKEN_OUTCOME: ${{ steps.broken.outcome }}
+        run: |
+          echo "healthy=$HEALTHY broken=$BROKEN outcome=$BROKEN_OUTCOME"
+          test "$HEALTHY" = passed
+          test "$BROKEN" = failed
+          test "$BROKEN_OUTCOME" = failure

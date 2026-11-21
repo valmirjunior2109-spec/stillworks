@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CLI = join(ROOT, "dist", "cli.js");
 const servers = [];
-let project, healthy, broken;
+let project, healthy, broken, unsaved;
 
 function startDemo(...args) {
   return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ function cli(args, { env = {}, input } = {}) {
 }
 
 before(async () => {
-  [healthy, broken] = await Promise.all([startDemo(), startDemo("--break=signup")]);
+  [healthy, broken, unsaved] = await Promise.all([startDemo(), startDemo("--break=signup"), startDemo("--break=save")]);
   project = mkdtempSync(join(tmpdir(), "stillworks-e2e-"));
 });
 
@@ -149,4 +149,20 @@ test("Claude Code hook: blocks with the report, then stays quiet until files cha
   const down = await cli(["hook", "claude-code"], { env: { STILLWORKS_URL: "http://127.0.0.1:9" }, input: "{}" });
   assert.match(down.stderr, /skipped \(Couldn't reach/);
   assert.equal(down.code, 0, "an app that isn't running never blocks the agent");
+});
+
+test("recipes run as written: read-the-data-back catches a save that never happened", async () => {
+  const recipe = join(ROOT, "recipes", "read-the-data-back.ts");
+  const ok = await cli(["run", "--url", healthy, "--config", recipe, "--no-promo"]);
+  assert.equal(ok.code, 0, ok.stdout + ok.stderr);
+  assert.match(ok.stdout, /✓ save-and-read-back/);
+
+  // The API answers 200 and the "Saved!" message shows, but the note is gone after a reload.
+  const bad = await cli(["run", "--url", unsaved, "--config", recipe, "--no-promo"]);
+  assert.equal(bad.code, 1, bad.stdout + bad.stderr);
+  assert.match(bad.stdout, /✗ save-and-read-back\s+failed at step 6\/6: "See the note after reloading"/);
+
+  const login = await cli(["run", "--url", healthy, "--config", join(ROOT, "recipes", "login-with-test-account.ts"), "--no-promo"]);
+  assert.equal(login.code, 0, login.stdout + login.stderr);
+  assert.match(login.stdout, /✓ login/);
 });
