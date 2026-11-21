@@ -128,6 +128,22 @@ Tips:
 
 **GitHub Actions + Vercel previews:** `npx stillworks init --github` adds a [workflow](integrations/github-actions/stillworks.yml). It runs your journeys against every successful preview deploy and puts the report in the run summary. Deployment Protection is supported.
 
+## Show it in your README
+
+When every journey passes, `REPORT.md` includes this badge to paste into your README:
+
+[![tested with stillworks](https://img.shields.io/badge/tested%20with-stillworks-9147ff)](https://github.com/valmirjunior2109-spec/stillworks)
+
+```md
+[![tested with stillworks](https://img.shields.io/badge/tested%20with-stillworks-9147ff)](https://github.com/valmirjunior2109-spec/stillworks)
+```
+
+It's a static image: it says your app is tested with stillworks, not that the last run passed. `--no-promo` leaves it out of the report.
+
+## When a journey fails but the app looks fine
+
+If a step times out and the page logged no errors and no request failed, the journey's selector probably doesn't match the page (different text, a button instead of a link, content that loads later). The terminal and `REPORT.md` say so, and tell your agent to check the screenshot before changing the app.
+
 ## Want this automatic on every change?
 
 `stillworks` runs your journeys and writes the report on your machine, when you ask. That part is free and open source, for good.

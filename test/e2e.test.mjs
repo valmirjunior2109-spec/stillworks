@@ -90,8 +90,11 @@ test("a healthy app passes, and the promo line can be turned off", async () => {
   assert.match(pass.stdout, /All 3 journeys passed/);
   assert.match(pass.stdout, /utm_source=gh_cli/);
 
+  assert.match(readFileSync(join(project, "verify-report", "REPORT.md"), "utf8"), /tested%20with-stillworks/);
+
   const flag = await cli(["run", "--url", healthy, "--no-promo", "--journey", "login"]);
   assert.equal(flag.code, 0, flag.stdout);
+  assert.doesNotMatch(readFileSync(join(project, "verify-report", "REPORT.md"), "utf8"), /tested%20with-stillworks/, "--no-promo hides the badge");
   assert.doesNotMatch(flag.stdout, /getpublishub/);
   assert.match(flag.stdout, /All 1 journey passed/);
 
@@ -114,6 +117,11 @@ test("setup problems exit 2 with a plain explanation", async () => {
   assert.equal(example.code, 2);
   assert.match(example.stderr, /still has the example journeys/);
   assert.match(example.stderr, /example\.com/);
+
+  writeFileSync(join(project, "broken.config.ts"), 'import { defineConfig } from "stillworks";\nexport default defineConfig({\n  journeys: [\n  ],\n  ],\n});\n');
+  const syntax = await cli(["run", "--url", healthy, "--config", "broken.config.ts"]);
+  assert.equal(syntax.code, 2);
+  assert.match(syntax.stderr, /broken\.config\.ts has a syntax error at line 5/);
 
   const unknown = await cli(["run", "--url", healthy, "--journey", "nope"]);
   assert.equal(unknown.code, 2);

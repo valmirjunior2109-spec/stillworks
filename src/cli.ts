@@ -7,7 +7,7 @@ import { parseArgs } from "node:util";
 import { baseURLSource, isLocalURL, parseHeaders, resolveBaseURL } from "./args.js";
 import { DEFAULT_CONFIG_FILE, UsageError, isExampleConfig, loadConfig } from "./config.js";
 import { CLI_PROMO, INIT_PROMO, shouldShowPromo } from "./promo.js";
-import { toReportPath, writeReport } from "./report.js";
+import { looksLikeJourneyProblem, toReportPath, writeReport } from "./report.js";
 import { runJourneys, type JourneyResult } from "./runner.js";
 import { INTEGRATIONS, PACKAGE_ROOT, init, installBrowser, nextSteps, type Integration } from "./setup.js";
 
@@ -102,6 +102,7 @@ async function main(argv: string[]): Promise<number> {
     timeout: values.timeout === undefined ? undefined : positiveNumber(values.timeout, "--timeout"),
     channel: values.channel ?? process.env.STILLWORKS_CHANNEL,
     headed: values.headed,
+    promo: shouldShowPromo(values["no-promo"]),
   };
 
   if (command === "run") {
@@ -127,6 +128,7 @@ interface CheckInput {
   timeout?: number;
   channel?: string;
   headed?: boolean;
+  promo?: boolean;
 }
 
 async function check(input: CheckInput, { quiet }: { quiet: boolean }) {
@@ -169,7 +171,7 @@ async function check(input: CheckInput, { quiet }: { quiet: boolean }) {
     input.configFile !== DEFAULT_CONFIG_FILE ? `--config ${input.configFile}` : "",
     input.outDir !== "verify-report" ? `--out ${input.outDir}` : "",
   ].filter(Boolean).join(" ");
-  const paths = writeReport(result, input.outDir, { rerun });
+  const paths = writeReport(result, input.outDir, { rerun, badge: input.promo !== false });
   const failed = result.journeys.filter((j) => j.status === "failed").length;
   const ran = result.journeys.filter((j) => j.status !== "skipped").length;
   const report = toReportPath(paths.markdown, process.cwd());
@@ -207,6 +209,7 @@ function journeyLines(journey: JourneyResult, width: number): string[] {
     extra.push(`${firstRequest.method} ${firstRequest.url} → ${firstRequest.status ?? firstRequest.failure}${more}`);
   }
   if (extra.length) lines.push(dim(`      ${extra.join(" · ")}`));
+  else if (looksLikeJourneyProblem(journey)) lines.push(dim("      no errors on the page: check the screenshot, the step's selector may not match"));
   return lines;
 }
 

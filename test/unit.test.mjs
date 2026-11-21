@@ -4,10 +4,10 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { baseURLSource, isLocalURL, parseHeaders, resolveBaseURL } from "../dist/args.js";
-import { UsageError, isExampleConfig, validateConfig } from "../dist/config.js";
+import { UsageError, isExampleConfig, loadErrorMessage, validateConfig } from "../dist/config.js";
 import { addDevCommand, hasLocalPackage, nextSteps } from "../dist/setup.js";
 import { CLI_PROMO, INIT_PROMO, REPORT_PROMO_URL, shouldShowPromo } from "../dist/promo.js";
-import { renderReport } from "../dist/report.js";
+import { BADGE_MARKDOWN, looksLikeJourneyProblem, renderReport } from "../dist/report.js";
 import { cleanError, slug } from "../dist/runner.js";
 
 const cwd = process.cwd();
@@ -136,4 +136,57 @@ test("init next steps mention npx.cmd only on Windows", () => {
   assert.match(nextSteps("journeys.config.ts", "win32"), /npx\.cmd/);
   assert.doesNotMatch(nextSteps("journeys.config.ts", "darwin"), /npx\.cmd/);
   assert.match(nextSteps("journeys.config.ts", "linux"), /set baseURL/);
+});
+
+// A step that timed out waiting for something, with no console errors and no failed requests: the
+// Invoicer case, where the page had no <a> links and the journey looked for one.
+const selectorRun = {
+  baseURL: "https://app.test",
+  startedAt: "2026-11-21T12:00:00.000Z",
+  durationMs: 20000,
+  journeys: [
+    {
+      name: "home",
+      status: "failed",
+      failedStep: 2,
+      durationMs: 20000,
+      steps: [
+        { name: "Open the home page", status: "passed", durationMs: 100 },
+        { name: "See a heading", status: "passed", durationMs: 100 },
+        { name: "See at least one link", status: "failed", durationMs: 15000, error: "locator.waitFor: Timeout 15000ms exceeded.\n- waiting for getByRole('link').first() to be visible", url: "https://app.test/" },
+      ],
+      consoleErrors: [],
+      failedRequests: [],
+    },
+  ],
+};
+
+test("a timeout with no errors on the page points at the journey, not the app", () => {
+  assert.ok(looksLikeJourneyProblem(selectorRun.journeys[0]));
+  assert.ok(!looksLikeJourneyProblem(failedRun.journeys[0]), "console errors and a 500 mean a real bug");
+  const md = renderReport(selectorRun, { cwd });
+  assert.match(md, /this may be the journey rather than the app/);
+  assert.match(md, /Open the screenshot first\./);
+  assert.doesNotMatch(md, /don't change the journey/);
+  // A real bug keeps the strict instruction.
+  assert.match(renderReport(failedRun, { cwd }), /don't change the journey or weaken the check/);
+  assert.doesNotMatch(renderReport(failedRun, { cwd }), /may be the journey rather than the app/);
+});
+
+test("a passing report suggests the README badge, unless promo is off", () => {
+  const passing = { ...failedRun, journeys: [failedRun.journeys[1]] };
+  assert.ok(renderReport(passing, { cwd }).includes(BADGE_MARKDOWN));
+  assert.ok(!renderReport(passing, { cwd, badge: false }).includes(BADGE_MARKDOWN));
+  assert.ok(!renderReport(failedRun, { cwd }).includes(BADGE_MARKDOWN), "no badge when something failed");
+  assert.match(BADGE_MARKDOWN, /tested%20with-stillworks/);
+  assert.doesNotMatch(BADGE_MARKDOWN, /passing/, "a static badge must not claim a live result");
+});
+
+test("syntax errors in the config name the line, on Linux and on Windows", () => {
+  const linux = loadErrorMessage("journeys.config.ts", 'ParseError: Unexpected token, expected ","  \n /home/me/app/journeys.config.ts:5:2');
+  assert.equal(linux, 'journeys.config.ts has a syntax error at line 5, column 2 (Unexpected token, expected ","). Usually a missing or extra bracket, comma or quote on or just before that line.');
+  const windows = loadErrorMessage("journeys.config.ts", "ParseError: C:\\: Unexpected token \n C:/Users/me/teste/journeys.config.ts:24:4");
+  assert.match(windows, /^journeys\.config\.ts has a syntax error at line 24, column 4 \(Unexpected token\)\./);
+  assert.doesNotMatch(windows, /C:/);
+  assert.equal(loadErrorMessage("journeys.config.ts", "Cannot find module 'x'"), "Couldn't load journeys.config.ts: Cannot find module 'x'");
 });

@@ -76,9 +76,26 @@ export async function loadConfig(file = DEFAULT_CONFIG_FILE): Promise<{ config: 
   try {
     mod = await jiti.import(path, { default: true });
   } catch (error) {
-    throw new UsageError(`Couldn't load ${file}: ${(error as Error).message}`);
+    throw new UsageError(loadErrorMessage(file, (error as Error).message));
   }
   return { config: validateConfig(mod, file), path };
+}
+
+/**
+ * Turns a parser error ("ParseError: C:\\: Unexpected token\n C:/…/journeys.config.ts:24:4") into something a
+ * person can act on: the line, the column and the usual cause.
+ */
+export function loadErrorMessage(file: string, message: string): string {
+  const position = message.match(/:(\d+):(\d+)\s*$/m);
+  if (position && /ParseError|SyntaxError|Unexpected|Unterminated/i.test(message)) {
+    const firstLine = message.split("\n")[0];
+    const what = firstLine.match(/(Unexpected .*|Unterminated .*|Expected .*|Missing .*)$/i)?.[1].trim();
+    return (
+      `${file} has a syntax error at line ${position[1]}, column ${position[2]}${what ? ` (${what})` : ""}. ` +
+      `Usually a missing or extra bracket, comma or quote on or just before that line.`
+    );
+  }
+  return `Couldn't load ${file}: ${message}`;
 }
 
 export function validateConfig(value: unknown, file = DEFAULT_CONFIG_FILE): Config {
