@@ -44,10 +44,26 @@ export interface Config {
 /** Gives you types and autocomplete in journeys.config.ts. It returns the config unchanged. */
 export const defineConfig = (config: Config): Config => config;
 
+/**
+ * Reads an environment variable, e.g. a test account's password, with a fallback.
+ * Works in journeys.config.ts without Node's type definitions installed.
+ */
+export const env = (name: string, fallback = ""): string => process.env[name] ?? fallback;
+
 /** A problem with how stillworks was called or configured (exit code 2), not a broken journey. */
 export class UsageError extends Error {}
 
 export const DEFAULT_CONFIG_FILE = "journeys.config.ts";
+
+/**
+ * True when a config is still the example from `init` (only baseURL may differ). Those journeys sign up, log in
+ * and pay, so they must not run against someone else's site.
+ */
+export function isExampleConfig(source: string, template: string): boolean {
+  const normalize = (text: string) =>
+    text.replace(/\r\n/g, "\n").replace(/baseURL:\s*(["'`])[^"'`]*\1/, 'baseURL: ""').trim();
+  return normalize(source) === normalize(template);
+}
 
 export async function loadConfig(file = DEFAULT_CONFIG_FILE): Promise<{ config: Config; path: string }> {
   const path = resolve(file);

@@ -1,4 +1,4 @@
-import { defineConfig } from "stillworks";
+import { defineConfig, env } from "stillworks";
 
 // Journeys are the flows your app can't live without. Each step is plain Playwright:
 // https://playwright.dev/docs/locators. Rename things, delete what you don't have, add your own.
@@ -9,8 +9,8 @@ const newUser = { email: `stillworks+${Date.now()}@example.com`, password: "corr
 
 // An account that already exists in the app you check (use a test account, never a real one).
 const existingUser = {
-  email: process.env.STILLWORKS_LOGIN_EMAIL ?? "demo@example.com",
-  password: process.env.STILLWORKS_LOGIN_PASSWORD ?? "demo-password",
+  email: env("STILLWORKS_LOGIN_EMAIL", "demo@example.com"),
+  password: env("STILLWORKS_LOGIN_PASSWORD", "demo-password"),
 };
 
 export default defineConfig({

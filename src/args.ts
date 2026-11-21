@@ -14,6 +14,23 @@ export function resolveBaseURL(flag: string | undefined, config: Pick<Config, "b
   return url.href.replace(/\/$/, "");
 }
 
+/** Where the URL being checked came from, in words, for error messages. */
+export function baseURLSource(flag: string | undefined, env: NodeJS.ProcessEnv = process.env, configFile = "the config"): string {
+  if (flag?.trim()) return "--url";
+  if (env.STILLWORKS_URL?.trim()) return "STILLWORKS_URL";
+  return `baseURL in ${configFile}`;
+}
+
+/** localhost, 127.x, ::1 and 0.0.0.0: an app running on this machine. */
+export function isLocalURL(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.replace(/^\[|\]$/g, "");
+    return host === "localhost" || host.endsWith(".localhost") || host === "::1" || host === "0.0.0.0" || /^127\./.test(host);
+  } catch {
+    return false;
+  }
+}
+
 export function parseHeaders(list: string[]): Record<string, string> {
   const headers: Record<string, string> = {};
   for (const item of list) {

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseHeaders, resolveBaseURL } from "../dist/args.js";
-import { UsageError, validateConfig } from "../dist/config.js";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { baseURLSource, isLocalURL, parseHeaders, resolveBaseURL } from "../dist/args.js";
+import { UsageError, isExampleConfig, validateConfig } from "../dist/config.js";
+import { addDevCommand, hasLocalPackage, nextSteps } from "../dist/setup.js";
 import { CLI_PROMO, INIT_PROMO, REPORT_PROMO_URL, shouldShowPromo } from "../dist/promo.js";
 import { renderReport } from "../dist/report.js";
 import { cleanError, slug } from "../dist/runner.js";
@@ -96,4 +100,40 @@ test("helpers: slugs are file-safe, Playwright errors lose the noise", () => {
   assert.equal(slug("***"), "step");
   const error = new Error("\u001b[31mlocator.click: Timeout 10000ms exceeded.\u001b[39m\nCall log:\n  - waiting for getByRole('button')\n  - another line\n  - noise");
   assert.equal(cleanError(error), "locator.click: Timeout 10000ms exceeded.\n- waiting for getByRole('button')\n- another line");
+});
+
+test("the URL's source is named in errors, and local URLs are recognized", () => {
+  assert.equal(baseURLSource("https://a.test", { STILLWORKS_URL: "x" }), "--url");
+  assert.equal(baseURLSource(undefined, { STILLWORKS_URL: "https://b.test" }), "STILLWORKS_URL");
+  assert.equal(baseURLSource(undefined, {}, "journeys.config.ts"), "baseURL in journeys.config.ts");
+  for (const url of ["http://localhost:3000", "http://app.localhost", "http://127.0.0.1:4173", "http://[::1]:3000", "http://0.0.0.0:8080"]) assert.ok(isLocalURL(url), url);
+  for (const url of ["https://linear.app", "https://my-app.vercel.app", "http://10.0.0.5"]) assert.ok(!isLocalURL(url), url);
+});
+
+test("the untouched example config is detected, even with a new baseURL or Windows line endings", () => {
+  const template = readFileSync(new URL("../templates/journeys.config.ts", import.meta.url), "utf8");
+  assert.ok(isExampleConfig(template, template));
+  assert.ok(isExampleConfig(template.replace('"http://localhost:3000"', '"https://linear.app"'), template));
+  assert.ok(isExampleConfig(template.replace(/\n/g, "\r\n"), template));
+  assert.ok(!isExampleConfig(template.replace('name: "signup"', 'name: "home"'), template));
+});
+
+test("init: dev dependency uses the folder's package manager, and an existing install is reused", () => {
+  const dir = mkdtempSync(join(tmpdir(), "stillworks-unit-"));
+  try {
+    assert.equal(addDevCommand(dir).command, "npm");
+    assert.ok(!hasLocalPackage(dir));
+    writeFileSync(join(dir, "pnpm-lock.yaml"), "");
+    assert.deepEqual(addDevCommand(dir), { command: "pnpm", args: ["add", "-D"] });
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "stillworks" }));
+    assert.ok(hasLocalPackage(dir), "the stillworks repo itself counts as installed");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("init next steps mention npx.cmd only on Windows", () => {
+  assert.match(nextSteps("journeys.config.ts", "win32"), /npx\.cmd/);
+  assert.doesNotMatch(nextSteps("journeys.config.ts", "darwin"), /npx\.cmd/);
+  assert.match(nextSteps("journeys.config.ts", "linux"), /set baseURL/);
 });

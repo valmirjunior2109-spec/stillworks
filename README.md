@@ -20,7 +20,7 @@ Claude Code, Cursor and Codex write code fast. The code compiles, passes lint an
 ## Quickstart (30 seconds)
 
 ```sh
-npx stillworks init                              # creates journeys.config.ts and installs Chromium
+npx stillworks init                              # creates journeys.config.ts, adds stillworks, installs Chromium
 # edit the selectors in journeys.config.ts so they match your app
 npx stillworks run --url http://localhost:3000   # runs every journey in a real browser
 ```
@@ -28,6 +28,10 @@ npx stillworks run --url http://localhost:3000   # runs every journey in a real 
 It exits with code `1` when a journey breaks. Open `verify-report/REPORT.md` and paste it into your agent.
 
 Works on macOS, Linux and Windows with Node.js 20 or newer.
+
+- **Checking a site you don't own?** Keep it to read-only journeys (open pages, look for text). The example journeys sign up and pay, so `stillworks` refuses to run them against anything but `localhost`.
+- **Windows PowerShell says "running scripts is disabled"?** Use `npx.cmd` instead of `npx` (for example `npx.cmd stillworks init`), or run the commands from Command Prompt.
+- `init` adds `stillworks` to your devDependencies so `journeys.config.ts` gets types and autocomplete in your editor. `--skip-install` skips that and the Chromium download.
 
 ## What your agent gets
 
@@ -99,7 +103,7 @@ Tips:
 
 - Name steps the way you'd describe them to a person. The names end up in the prompt your agent reads.
 - Prefer `getByRole` and `getByLabel` over CSS selectors. They survive refactors, and they break when accessibility does.
-- Every journey starts with fresh cookies. Use a test account for login and test mode for payments, never real ones.
+- Every journey starts with fresh cookies. Use a test account for login and test mode for payments, never real ones. Read its password with `env("TEST_PASSWORD")` (exported by `stillworks`) instead of writing it in the file.
 - Ask your agent to write them: *"Read journeys.config.ts and add a journey for inviting a teammate."*
 
 | Option | Default | What it does |

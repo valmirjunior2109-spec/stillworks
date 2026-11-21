@@ -57,14 +57,62 @@ export async function init(options: InitOptions = {}) {
   }
 
   if (!options.skipInstall) {
+    await addLocalPackage(cwd, log);
     log("… Installing Chromium for Playwright (one time, about 150 MB).");
-    await installBrowser({});
+    await installBrowser({ cwd });
   }
 }
 
-/** Runs the Playwright CLI that ships with stillworks, so the browser always matches its version. */
-export async function installBrowser({ withDeps = false }: { withDeps?: boolean }) {
-  const require = createRequire(import.meta.url);
+/** True when this folder already has its own copy of stillworks (or is the stillworks repo itself). */
+export function hasLocalPackage(cwd: string): boolean {
+  if (existsSync(join(cwd, "node_modules", "stillworks", "package.json"))) return true;
+  try {
+    return JSON.parse(readFileSync(join(cwd, "package.json"), "utf8")).name === "stillworks";
+  } catch {
+    return false;
+  }
+}
+
+/** The command that adds a dev dependency with the package manager this folder already uses. */
+export function addDevCommand(cwd: string): { command: string; args: string[] } {
+  if (existsSync(join(cwd, "pnpm-lock.yaml"))) return { command: "pnpm", args: ["add", "-D"] };
+  if (existsSync(join(cwd, "yarn.lock"))) return { command: "yarn", args: ["add", "-D"] };
+  if (existsSync(join(cwd, "bun.lock")) || existsSync(join(cwd, "bun.lockb"))) return { command: "bun", args: ["add", "-d"] };
+  return { command: "npm", args: ["install", "--save-dev", "--no-audit", "--no-fund"] };
+}
+
+/**
+ * Adds stillworks as a dev dependency, so `import { defineConfig } from "stillworks"` has types in the editor
+ * (no red squiggles, autocomplete for `page`). Running journeys works without it; this is only for the editor,
+ * so a failure here never stops init.
+ */
+async function addLocalPackage(cwd: string, log: (line: string) => void) {
+  if (hasLocalPackage(cwd)) return;
+  const version = JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8")).version;
+  const { command, args } = addDevCommand(cwd);
+  log(`… Adding stillworks to devDependencies (types and autocomplete for ${DEFAULT_CONFIG_FILE}).`);
+  const code = await new Promise<number>((done) => {
+    const argv = [...args, `stillworks@${version}`];
+    // npm, pnpm and yarn are .cmd files on Windows, which only start through a shell. Every argument here is fixed
+    // (no user input), and passing one command string avoids Node's warning about args with `shell: true`.
+    const child =
+      process.platform === "win32"
+        ? spawn([command, ...argv].join(" "), { cwd, stdio: "inherit", shell: true })
+        : spawn(command, argv, { cwd, stdio: "inherit" });
+    child.on("close", (c) => done(c ?? 1));
+    child.on("error", () => done(1));
+  });
+  if (code === 0) log("✓ Added stillworks to devDependencies.");
+  else log(`• Couldn't add stillworks to devDependencies. Journeys still run; for editor types, run: npm install --save-dev stillworks`);
+}
+
+/**
+ * Runs the Playwright CLI that will run the journeys, so the browser always matches its version: the project's
+ * own copy of stillworks when there is one (that's what `npx stillworks run` picks), otherwise this one.
+ */
+export async function installBrowser({ withDeps = false, cwd = process.cwd() }: { withDeps?: boolean; cwd?: string }) {
+  const local = join(cwd, "node_modules", "stillworks", "package.json");
+  const require = createRequire(existsSync(local) ? local : import.meta.url);
   const cli = join(dirname(require.resolve("playwright/package.json")), "cli.js");
   const args = [cli, "install", "chromium", ...(withDeps ? ["--with-deps"] : [])];
   const code = await new Promise<number>((done) => {
@@ -73,4 +121,15 @@ export async function installBrowser({ withDeps = false }: { withDeps?: boolean 
     child.on("error", () => done(1));
   });
   if (code !== 0) throw new UsageError(`Installing Chromium failed (exit ${code}). Try again, or run: npx playwright install chromium`);
+}
+
+/** What to do after init. On Windows, PowerShell often blocks npx.ps1, and npx.cmd always works. */
+export function nextSteps(configFile: string, platform: NodeJS.Platform = process.platform): string {
+  const lines = [
+    "Next:",
+    `  1. Edit ${configFile}: set baseURL and change the example journeys so they match your app.`,
+    "  2. npx stillworks run --url http://localhost:3000",
+  ];
+  if (platform === "win32") lines.push("", 'Windows PowerShell says "running scripts is disabled"? Use npx.cmd instead of npx.');
+  return lines.join("\n");
 }

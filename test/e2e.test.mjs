@@ -55,6 +55,7 @@ test("init creates the example config and ignores the report folder", async () =
     assert.ok(existsSync(join(project, file)), file);
   }
   assert.match(stdout, /utm_source=gh_init/);
+  assert.ok(!existsSync(join(project, "node_modules")), "--skip-install installs nothing");
   const again = await cli(["init", "--skip-install", "--no-promo"]);
   assert.match(again.stdout, /already exists/);
   assert.doesNotMatch(again.stdout, /getpublishub/);
@@ -105,7 +106,14 @@ test("setup problems exit 2 with a plain explanation", async () => {
 
   const down = await cli(["run", "--url", "http://127.0.0.1:9"]);
   assert.equal(down.code, 2);
-  assert.match(down.stderr, /Couldn't reach/);
+  assert.match(down.stderr, /Couldn't reach http:\/\/127\.0\.0\.1:9 \(from --url\)/);
+  assert.match(down.stderr, /--url https:\/\/your-app\.com/);
+
+  // The example journeys sign up and pay: they never run against someone else's site, and no request is made.
+  const example = await cli(["run", "--url", "https://example.com"]);
+  assert.equal(example.code, 2);
+  assert.match(example.stderr, /still has the example journeys/);
+  assert.match(example.stderr, /example\.com/);
 
   const unknown = await cli(["run", "--url", healthy, "--journey", "nope"]);
   assert.equal(unknown.code, 2);

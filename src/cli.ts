@@ -4,12 +4,12 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { parseHeaders, resolveBaseURL } from "./args.js";
-import { DEFAULT_CONFIG_FILE, UsageError, loadConfig } from "./config.js";
+import { baseURLSource, isLocalURL, parseHeaders, resolveBaseURL } from "./args.js";
+import { DEFAULT_CONFIG_FILE, UsageError, isExampleConfig, loadConfig } from "./config.js";
 import { CLI_PROMO, INIT_PROMO, shouldShowPromo } from "./promo.js";
 import { toReportPath, writeReport } from "./report.js";
 import { runJourneys, type JourneyResult } from "./runner.js";
-import { INTEGRATIONS, PACKAGE_ROOT, init, installBrowser, type Integration } from "./setup.js";
+import { INTEGRATIONS, PACKAGE_ROOT, init, installBrowser, nextSteps, type Integration } from "./setup.js";
 
 const HELP = `stillworks: your AI writes the code, this checks it still works.
 
@@ -32,7 +32,7 @@ Options for run
 
 Options for init
       --claude --cursor --github   also add the Claude Code command, Cursor rule or GitHub Action
-      --skip-install               don't download Chromium
+      --skip-install               don't install anything (the stillworks package or Chromium)
       --force                      overwrite files that already exist
       --no-promo                   hide the one-line Publishub note (or NO_PUBLISHUB_PROMO=1)
 
@@ -83,7 +83,7 @@ async function main(argv: string[]): Promise<number> {
   if (command === "init") {
     const integrations = (Object.keys(INTEGRATIONS) as Integration[]).filter((key) => values[key]);
     await init({ config: values.config, force: values.force, skipInstall: values["skip-install"], integrations });
-    console.log(`\nNext:\n  1. Edit ${values.config ?? DEFAULT_CONFIG_FILE} so the selectors match your app.\n  2. npx stillworks run --url http://localhost:3000`);
+    console.log(`\n${nextSteps(values.config ?? DEFAULT_CONFIG_FILE)}`);
     if (shouldShowPromo(values["no-promo"])) console.log(`\n${dim(INIT_PROMO)}`);
     return 0;
   }
@@ -130,9 +130,16 @@ interface CheckInput {
 }
 
 async function check(input: CheckInput, { quiet }: { quiet: boolean }) {
-  const { config } = await loadConfig(input.configFile);
+  const { config, path } = await loadConfig(input.configFile);
   const baseURL = resolveBaseURL(input.url, config);
-  await assertReachable(baseURL);
+  const template = readFileSync(join(PACKAGE_ROOT, "templates", "journeys.config.ts"), "utf8");
+  if (!isLocalURL(baseURL) && isExampleConfig(readFileSync(path, "utf8"), template)) {
+    throw new UsageError(
+      `${input.configFile} still has the example journeys (signup, login, checkout). They create accounts and submit forms, ` +
+        `so they won't run against ${new URL(baseURL).host}. Change them to match your app first.`,
+    );
+  }
+  await assertReachable(baseURL, baseURLSource(input.url, process.env, input.configFile));
   const print = quiet ? () => {} : (line: string) => console.log(line);
   const count = config.journeys.filter((j) => !j.skip && (!input.only?.length || input.only.includes(j.name))).length;
   print(`${bold("stillworks")} ${dim("·")} checking ${baseURL} ${dim(`· ${count} ${count === 1 ? "journey" : "journeys"}`)}\n`);
@@ -270,11 +277,13 @@ function workingTreeFingerprint(): string | undefined {
   }
 }
 
-async function assertReachable(baseURL: string) {
+async function assertReachable(baseURL: string, source: string) {
   try {
     await fetch(baseURL, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(15_000) });
   } catch {
-    throw new UsageError(`Couldn't reach ${baseURL}. Is the app running?`);
+    throw new UsageError(
+      `Couldn't reach ${baseURL} (from ${source}). Is the app running? To check another address: npx stillworks run --url https://your-app.com`,
+    );
   }
 }
 
