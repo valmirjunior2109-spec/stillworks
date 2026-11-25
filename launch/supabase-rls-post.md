@@ -83,8 +83,8 @@ When it fails, it writes a report you paste back into Claude Code or Cursor: the
 the failed requests with the server's response, and a screenshot. The recipe is
 [here](https://github.com/valmirjunior2109-spec/stillworks/blob/main/recipes/read-the-data-back.ts).
 
-If you build in Lovable or Bolt and don't use a terminal: the same tool runs as an MCP server your agent can call,
-and there's a [free online check](https://getpublishub.com/check?utm_source=devto_rls) for public pages.
+If you build in Lovable or Bolt: connect the project to GitHub and the same check runs on every deploy with the
+stillworks GitHub Action. There's also a [free online check](https://getpublishub.com/check?utm_source=devto_rls) for public pages.
 
 ## The general rule
 

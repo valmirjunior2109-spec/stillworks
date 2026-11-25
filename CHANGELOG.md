@@ -7,7 +7,6 @@ All notable changes to stillworks. Versions follow [semver](https://semver.org/)
 ### Added
 
 - **Claude Code plugin:** `/plugin marketplace add valmirjunior2109-spec/stillworks`, then `/plugin install stillworks@stillworks`, adds the `/verify` command and the MCP server in one step ([integrations/claude-code-plugin](integrations/claude-code-plugin/README.md)). When releasing, bump the version in `integrations/claude-code-plugin/.claude-plugin/plugin.json` too (a unit test checks it).
-- **A free public hosted server on Hugging Face Spaces**, deployed by `.github/workflows/deploy-hosted-mcp.yml` (on demand and on every release tag; skipped until `HF_TOKEN` and `HF_SPACE` are set). The README and integration docs point Lovable, Bolt, Replit, claude.ai and ChatGPT to it.
 
 ### Changed
 

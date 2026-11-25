@@ -37,7 +37,7 @@ Goal: 3 good replies a day, every day, for two weeks. Then check which kind of b
 | "The signup button does nothing" | API renamed a field, the form still sends the old one; 500 swallowed | a signup journey; the report shows the failed request and its response |
 | "Login loops back to the login page" | middleware or redirect changed by the agent | a login journey with a test account ([recipe](../recipes/login-with-test-account.ts)) |
 | "A page is blank after the last change" | uncaught JavaScript error | `npx stillworks check <url>`, zero setup |
-| "Works locally, broken after deploy" | env var missing in production, 5xx from the API | `check` against the deployed URL, or the hosted MCP server from Lovable/Bolt |
+| "Works locally, broken after deploy" | env var missing in production, 5xx from the API | `npx stillworks check <deployed-url>`, or the GitHub Action on every deploy |
 
 ## Templates
 

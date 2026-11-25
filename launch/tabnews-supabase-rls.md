@@ -73,8 +73,8 @@ Quando falha, ela escreve um relatório para colar no Claude Code ou no Cursor: 
 as requisições que falharam com a resposta do servidor e um print. A receita está
 [aqui](https://github.com/valmirjunior2109-spec/stillworks/blob/main/recipes/read-the-data-back.ts).
 
-Se você constrói no Lovable ou no Bolt e não usa terminal, a mesma ferramenta roda como servidor MCP que o agente
-chama, e tem um [check online grátis](https://getpublishub.com/check?utm_source=tabnews_rls) das páginas públicas.
+Se você constrói no Lovable ou no Bolt, conecte o projeto ao GitHub e o mesmo teste roda a cada deploy com a GitHub
+Action do stillworks. Também tem um [check online grátis](https://getpublishub.com/check?utm_source=tabnews_rls) das páginas públicas.
 
 ## A regra geral
 

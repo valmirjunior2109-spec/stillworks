@@ -44,9 +44,7 @@ npx stillworks run --url http://localhost:3000   # runs every journey in a real 
 
 Both exit with code `1` when something breaks. Open `verify-report/REPORT.md` and paste it into your agent.
 
-> **No terminal?** If you build with Lovable, Bolt, Replit or v0:
-> - connect your agent (or claude.ai, ChatGPT) to the free public server, no install: `https://HF_USER-stillworks-mcp.hf.space/mcp` ([how](integrations/README.md#in-the-cloud-lovable-bolt-replit-claudeai-chatgpt));
-> - or [check your deployed app online, free](https://getpublishub.com/check?utm_source=gh_readme_check), in your browser.
+> **No terminal?** If you build with Lovable, Bolt or v0, [check your deployed app online, free](https://getpublishub.com/check?utm_source=gh_readme_check): same idea, in your browser, no install.
 
 Works on macOS, Linux and Windows with Node.js 20 or newer.
 
@@ -163,7 +161,7 @@ More in [recipes/](recipes/README.md).
   ```
 
 - VS Code, Windsurf, Codex, Claude Desktop, Gemini CLI: [setup for each one](integrations/README.md#on-your-machine).
-- **Lovable, Bolt, Replit, claude.ai, ChatGPT** run in the cloud and connect to a URL instead. Use the free public server: `https://HF_USER-stillworks-mcp.hf.space/mcp` (`check_app` for public URLs, read-only, private networks blocked, 20 checks an hour). [Connect each tool](integrations/README.md#in-the-cloud-lovable-bolt-replit-claudeai-chatgpt), or [host your own](integrations/README.md#hosting-the-server) with the Dockerfile.
+- **Lovable, Bolt, Replit, claude.ai, ChatGPT** run in the cloud and connect to a URL instead: `npx stillworks mcp --http --hosted` serves `check_app` for public URLs, with private networks blocked. [Deploy it with the Dockerfile](integrations/README.md#hosting-the-server) and [connect each tool](integrations/README.md#in-the-cloud-lovable-bolt-replit-claudeai-chatgpt).
 
 Run `npx stillworks install` once first, so the browser is there.
 

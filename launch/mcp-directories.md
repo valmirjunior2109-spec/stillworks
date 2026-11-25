@@ -27,14 +27,13 @@ and returns a bug report your coding agent can fix.
 > stillworks gives your agent two tools. `check_app` opens an app and its key pages in a real browser (zero setup,
 > read-only) and reports pages that don't load, "not found" screens, JavaScript crashes and 5xx errors.
 > `run_journeys` runs your signup, login and checkout journeys (plain Playwright steps) and returns the step that
-> failed, console errors, failed requests with the server's response, and screenshots. Local: `npx -y stillworks mcp`.
-> Cloud builders (Lovable, Bolt, Replit) and remote connectors (claude.ai, ChatGPT) can use the free public server at
-> `https://HF_USER-stillworks-mcp.hf.space/mcp`. MIT, no telemetry.
+> failed, console errors, failed requests with the server's response, and screenshots. Run it with
+> `npx -y stillworks mcp`. MIT, no telemetry, no account.
 
 **Categories / tags:** testing, browser automation, developer tools, playwright, e2e, vibe coding
 
 **awesome-mcp-servers line** (match their emoji legend when you submit):
 
 ```md
-- [valmirjunior2109-spec/stillworks](https://github.com/valmirjunior2109-spec/stillworks) 📇 🏠 ☁️ - Runs your app's signup, login and checkout in a real browser after AI code changes and returns a bug report (failed step, console errors, failed requests, screenshots) the agent can fix.
+- [valmirjunior2109-spec/stillworks](https://github.com/valmirjunior2109-spec/stillworks) 📇 🏠 - Runs your app's signup, login and checkout in a real browser after AI code changes and returns a bug report (failed step, console errors, failed requests, screenshots) the agent can fix.
 ```
