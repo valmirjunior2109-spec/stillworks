@@ -96,13 +96,13 @@ It only listens on this machine and refuses requests from web pages that aren't 
 
 ## In the cloud: Lovable, Bolt, Replit, claude.ai, ChatGPT
 
-These connect to the hosted server's URL (Streamable HTTP):
+These connect to a hosted server's URL (Streamable HTTP). Use the free public one Publishub runs:
 
 ```
-https://<your-host>/mcp
+https://HF_USER-stillworks-mcp.hf.space/mcp
 ```
 
-Deploy it yourself in a few minutes (see [Hosting the server](#hosting-the-server)), or use the one Publishub runs, once it's announced in the [README](../README.md).
+It runs on a free Hugging Face Space: after a quiet day or two it sleeps, and the first request wakes it up (about a minute). Or host your own in a few minutes (see [Hosting the server](#hosting-the-server)).
 
 Then tell the agent, after a change: *"Publish, then call check_app on the published URL and fix what it reports."*
 
@@ -130,6 +130,11 @@ No MCP at all? Paste your published URL into [Publishub's free check](https://ge
 ## Hosting the server
 
 The hosted server is the same package with `--http --hosted`, in the [Dockerfile](../Dockerfile) at the repository root (Playwright's image, so Chromium is included).
+
+**Hugging Face Spaces** (free, no card; this is how the public server runs): create a Docker Space, then let the
+[deploy workflow](../.github/workflows/deploy-hosted-mcp.yml) push to it. Its header lists the three settings it needs
+(`HF_TOKEN`, `HF_SPACE`). The Space's page text is [deploy/huggingface/README.md](../deploy/huggingface/README.md).
+Your URL is `https://<user>-<space>.hf.space/mcp`.
 
 **Fly.io** (the repository has a [`fly.toml`](../fly.toml)):
 

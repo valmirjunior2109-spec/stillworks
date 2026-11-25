@@ -1,0 +1,10 @@
+{
+  "name": "stillworks",
+  "version": "0.1.7",
+  "description": "Check that signup, login and checkout still work in a real browser after Claude changes your app: a /verify command and the stillworks MCP server (check_app, run_journeys).",
+  "author": { "name": "Publishub", "url": "https://getpublishub.com/?utm_source=cc_plugin" },
+  "homepage": "https://github.com/valmirjunior2109-spec/stillworks",
+  "repository": "https://github.com/valmirjunior2109-spec/stillworks",
+  "license": "MIT",
+  "keywords": ["testing", "playwright", "e2e", "verification", "mcp", "vibe-coding"]
+}

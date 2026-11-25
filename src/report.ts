@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
-import { REPORT_FOOTER } from "./promo.js";
+import { REPORT_FAIL_FOOTER, REPORT_FOOTER } from "./promo.js";
 import type { JourneyResult, RunResult } from "./runner.js";
 
 export interface ReportOptions {
@@ -67,7 +67,7 @@ export function renderReport(result: RunResult, options: ReportOptions = {}): st
     const label = journey.status === "passed" ? "✅ passed" : journey.status === "failed" ? "❌ failed" : "⏭️ skipped";
     lines.push(`| ${escapeCell(journey.name)} | ${label} | ${done}/${journey.steps.length} | ${seconds(journey.durationMs)} |`);
   }
-  lines.push("", "---", "", REPORT_FOOTER, "");
+  lines.push("", "---", "", failed.length ? REPORT_FAIL_FOOTER : REPORT_FOOTER, "");
   return lines.join("\n");
 }
 

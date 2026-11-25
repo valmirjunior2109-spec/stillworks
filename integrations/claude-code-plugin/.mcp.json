@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "stillworks": { "command": "npx", "args": ["-y", "stillworks", "mcp"] }
+  }
+}

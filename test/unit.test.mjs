@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { baseURLSource, isLocalURL, parseHeaders, resolveBaseURL } from "../dist/args.js";
 import { UsageError, isExampleConfig, loadErrorMessage, validateConfig } from "../dist/config.js";
 import { addDevCommand, hasLocalPackage, nextSteps } from "../dist/setup.js";
-import { CLI_PROMO, INIT_PROMO, REPORT_PROMO_URL, shouldShowPromo } from "../dist/promo.js";
+import { CLI_FAIL_PROMO, CLI_PROMO, INIT_PROMO, REPORT_FAIL_PROMO_URL, REPORT_PROMO_URL, cliPromo, shouldShowPromo } from "../dist/promo.js";
 import { BADGE_MARKDOWN, looksLikeJourneyProblem, renderReport } from "../dist/report.js";
 import { cleanError, slug } from "../dist/runner.js";
 import { looksLikeErrorScreen, pickPages, smokeConfig } from "../dist/smoke.js";
@@ -50,11 +50,13 @@ test("a failed run reads as a prompt for the agent", () => {
   assert.match(md, /\| signup \| ❌ failed \| 2\/4 \|/);
 });
 
-test("the report ends with the gh_report footer", () => {
-  const md = renderReport(failedRun, { cwd }).trimEnd();
-  const last = md.split("\n").at(-1);
-  assert.ok(last.includes(REPORT_PROMO_URL), last);
-  assert.ok(REPORT_PROMO_URL.includes("utm_source=gh_report"));
+test("the report footer depends on the result: gh_report_fail when something broke, gh_report when it all passed", () => {
+  const failedLast = renderReport(failedRun, { cwd }).trimEnd().split("\n").at(-1);
+  assert.ok(failedLast.includes(REPORT_FAIL_PROMO_URL), failedLast);
+  assert.ok(REPORT_FAIL_PROMO_URL.includes("utm_source=gh_report_fail"));
+  const passedLast = renderReport({ ...failedRun, journeys: [failedRun.journeys[1]] }, { cwd }).trimEnd().split("\n").at(-1);
+  assert.ok(passedLast.includes(REPORT_PROMO_URL), passedLast);
+  assert.ok(!passedLast.includes("gh_report_fail"), passedLast);
 });
 
 test("a passing run says so and asks for nothing", () => {
@@ -64,7 +66,10 @@ test("a passing run says so and asks for nothing", () => {
 });
 
 test("promo line: on by default, off with --no-promo or NO_PUBLISHUB_PROMO", () => {
-  assert.ok(CLI_PROMO.includes("https://getpublishub.com/?utm_source=gh_cli"));
+  assert.ok(CLI_PROMO.includes("https://getpublishub.com/?utm_source=gh_cli#"));
+  assert.ok(CLI_FAIL_PROMO.includes("https://getpublishub.com/?utm_source=gh_cli_fail"));
+  assert.equal(cliPromo(true), CLI_FAIL_PROMO);
+  assert.equal(cliPromo(false), CLI_PROMO);
   assert.ok(INIT_PROMO.includes("https://getpublishub.com/?utm_source=gh_init"));
   assert.equal(shouldShowPromo(false, {}), true);
   assert.equal(shouldShowPromo(true, {}), false);
@@ -243,4 +248,19 @@ test("hosted mode: private, loopback, link-local and mapped addresses are never 
   for (const host of ["localhost", "app.localhost", "metadata.google.internal", "printer.local", "127.0.0.1", "[::1]"]) {
     assert.equal(await isPublicHost(host), false, host);
   }
+});
+
+test("the Claude Code plugin stays in sync with the package", () => {
+  const root = new URL("..", import.meta.url);
+  const read = (path) => readFileSync(new URL(path, root), "utf8");
+  const pkg = JSON.parse(read("package.json"));
+  const plugin = JSON.parse(read("integrations/claude-code-plugin/.claude-plugin/plugin.json"));
+  assert.equal(plugin.version, pkg.version, "bump integrations/claude-code-plugin/.claude-plugin/plugin.json with package.json");
+  assert.equal(
+    read("integrations/claude-code-plugin/commands/verify.md"),
+    read("integrations/claude-code/commands/verify.md"),
+    "the plugin's /verify and the one init --claude copies must be the same file",
+  );
+  const marketplace = JSON.parse(read(".claude-plugin/marketplace.json"));
+  assert.equal(marketplace.plugins[0].source, "./integrations/claude-code-plugin");
 });

@@ -44,7 +44,9 @@ npx stillworks run --url http://localhost:3000   # runs every journey in a real 
 
 Both exit with code `1` when something breaks. Open `verify-report/REPORT.md` and paste it into your agent.
 
-> **No terminal?** If you build with Lovable, Bolt or v0, [check your deployed app online, free](https://getpublishub.com/check?utm_source=gh_readme_check): same idea, in your browser, no install.
+> **No terminal?** If you build with Lovable, Bolt, Replit or v0:
+> - connect your agent (or claude.ai, ChatGPT) to the free public server, no install: `https://HF_USER-stillworks-mcp.hf.space/mcp` ([how](integrations/README.md#in-the-cloud-lovable-bolt-replit-claudeai-chatgpt));
+> - or [check your deployed app online, free](https://getpublishub.com/check?utm_source=gh_readme_check), in your browser.
 
 Works on macOS, Linux and Windows with Node.js 20 or newer.
 
@@ -147,7 +149,8 @@ More in [recipes/](recipes/README.md).
 ## Use it with your agent
 
 **Claude Code**
-- `npx stillworks init --claude` adds a `/verify` command: Claude runs the journeys, reads the report, fixes the bug and runs them again.
+- **Plugin (one step):** `/plugin marketplace add valmirjunior2109-spec/stillworks`, then `/plugin install stillworks@stillworks`. It adds the `/verify` command and the MCP server. [Details](integrations/claude-code-plugin/README.md)
+- Or `npx stillworks init --claude` adds a `/verify` command: Claude runs the journeys, reads the report, fixes the bug and runs them again.
 - To check automatically every time Claude finishes, add the [Stop hook](integrations/claude-code/README.md). It skips turns where no file changed and never blocks Claude when the app isn't running.
 
 **As an MCP server (Claude Code, Cursor, VS Code, Windsurf, Codex, Lovable, Bolt, Replit…):** your agent gets two tools, `check_app` (zero setup, read-only) and `run_journeys` (your `journeys.config.ts`), and calls them itself after a change.
@@ -160,7 +163,7 @@ More in [recipes/](recipes/README.md).
   ```
 
 - VS Code, Windsurf, Codex, Claude Desktop, Gemini CLI: [setup for each one](integrations/README.md#on-your-machine).
-- **Lovable, Bolt, Replit, claude.ai, ChatGPT** run in the cloud and connect to a URL instead: `npx stillworks mcp --http --hosted` serves `check_app` for public URLs, with private networks blocked. [Deploy it with the Dockerfile](integrations/README.md#hosting-the-server) and [connect each tool](integrations/README.md#in-the-cloud-lovable-bolt-replit-claudeai-chatgpt).
+- **Lovable, Bolt, Replit, claude.ai, ChatGPT** run in the cloud and connect to a URL instead. Use the free public server: `https://HF_USER-stillworks-mcp.hf.space/mcp` (`check_app` for public URLs, read-only, private networks blocked, 20 checks an hour). [Connect each tool](integrations/README.md#in-the-cloud-lovable-bolt-replit-claudeai-chatgpt), or [host your own](integrations/README.md#hosting-the-server) with the Dockerfile.
 
 Run `npx stillworks install` once first, so the browser is there.
 
@@ -217,7 +220,7 @@ If a step times out and the page logged no errors and no request failed, the jou
 Two ways in:
 
 - **[Join the free waitlist →](https://getpublishub.com/?utm_source=gh_readme#early-access)** Product updates and an email when it launches. No payment.
-- **[Become a Founding Customer →](https://getpublishub.com/?utm_source=gh_founding#pricing)** $0 today, then $19/month only once Publishub launches. You lock in the founding price, get early and priority access, and help decide what Publishub checks. You get at least 7 days' notice before the first charge, you can cancel any time before it, and the first payment is refundable within 14 days.
+- **[Become a Founding Customer →](https://getpublishub.com/?utm_source=gh_founding#pricing)** $0 today, then $19/month only once Publishub launches. You lock in the founding price, get early and priority access, help decide what Publishub checks, and the founder sets up your journeys with you, for your app. You get at least 7 days' notice before the first charge, you can cancel any time before it, and the first payment is refundable within 14 days.
 
 ## CLI
 
@@ -240,10 +243,10 @@ npx stillworks mcp
 ### Privacy and the one promo line
 
 - **No telemetry.** `stillworks` collects nothing and sends nothing anywhere. The only network requests it makes are to the URL you check. Chromium is downloaded by Playwright when you run `install`.
-- At the end of `run`, it prints one line about Publishub: `Want this on every AI change, with regression diffs? → https://getpublishub.com/?utm_source=gh_cli`. `init` prints a similar line once, at the end of setup.
+- At the end of `run` and `check`, it prints one line about Publishub. When something broke, it says Publishub will run these journeys on every PR before you deploy, and links to the Founding Customers offer (`utm_source=gh_cli_fail`). When everything passed, it links to early access (`utm_source=gh_cli`). `init` prints a similar line once, at the end of setup.
   - Turn it off with `--no-promo` or `NO_PUBLISHUB_PROMO=1`.
   - The Claude Code hook never prints it.
-  - `REPORT.md` ends with a one-line footer linking to Publishub.
+  - `REPORT.md` ends with a one-line footer linking to Publishub (a different one when something failed).
 
 ## Try it on the demo app
 
