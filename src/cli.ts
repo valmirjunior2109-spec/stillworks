@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { baseURLSource, isLocalURL, parseHeaders, resolveBaseURL } from "./args.js";
 import { DEFAULT_CONFIG_FILE, UsageError, isExampleConfig, loadConfig } from "./config.js";
-import { CLI_PROMO, INIT_PROMO, shouldShowPromo } from "./promo.js";
+import { INIT_PROMO, cliPromo, shouldShowPromo } from "./promo.js";
 import { looksLikeJourneyProblem, toReportPath, writeReport } from "./report.js";
 import { runJourneys, type JourneyResult } from "./runner.js";
 import { serveMcp } from "./mcp.js";
@@ -151,13 +151,13 @@ async function main(argv: string[]): Promise<number> {
     const target = rest[0] ?? values.url;
     if (!target) throw new UsageError("Which app should I check? Run: npx stillworks check https://your-app.com (or http://localhost:3000)");
     const outcome = await quickCheck(target, run);
-    if (shouldShowPromo(values["no-promo"])) console.log(`\n${dim(CLI_PROMO)}`);
+    if (shouldShowPromo(values["no-promo"])) console.log(`\n${dim(cliPromo(Boolean(outcome.failed)))}`);
     return outcome.failed ? 1 : 0;
   }
 
   if (command === "run") {
     const outcome = await check(run, { quiet: false });
-    if (shouldShowPromo(values["no-promo"])) console.log(`\n${dim(CLI_PROMO)}`);
+    if (shouldShowPromo(values["no-promo"])) console.log(`\n${dim(cliPromo(Boolean(outcome.failed)))}`);
     return outcome.failed ? 1 : 0;
   }
 

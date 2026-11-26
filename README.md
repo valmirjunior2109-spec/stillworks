@@ -147,7 +147,8 @@ More in [recipes/](recipes/README.md).
 ## Use it with your agent
 
 **Claude Code**
-- `npx stillworks init --claude` adds a `/verify` command: Claude runs the journeys, reads the report, fixes the bug and runs them again.
+- **Plugin (one step):** `/plugin marketplace add valmirjunior2109-spec/stillworks`, then `/plugin install stillworks@stillworks`. It adds the `/verify` command and the MCP server. [Details](integrations/claude-code-plugin/README.md)
+- Or `npx stillworks init --claude` adds a `/verify` command: Claude runs the journeys, reads the report, fixes the bug and runs them again.
 - To check automatically every time Claude finishes, add the [Stop hook](integrations/claude-code/README.md). It skips turns where no file changed and never blocks Claude when the app isn't running.
 
 **As an MCP server (Claude Code, Cursor, VS Code, Windsurf, Codex, Lovable, Bolt, Replit…):** your agent gets two tools, `check_app` (zero setup, read-only) and `run_journeys` (your `journeys.config.ts`), and calls them itself after a change.
@@ -217,7 +218,7 @@ If a step times out and the page logged no errors and no request failed, the jou
 Two ways in:
 
 - **[Join the free waitlist →](https://getpublishub.com/?utm_source=gh_readme#early-access)** Product updates and an email when it launches. No payment.
-- **[Become a Founding Customer →](https://getpublishub.com/?utm_source=gh_founding#pricing)** $0 today, then $19/month only once Publishub launches. You lock in the founding price, get early and priority access, and help decide what Publishub checks. You get at least 7 days' notice before the first charge, you can cancel any time before it, and the first payment is refundable within 14 days.
+- **[Become a Founding Customer →](https://getpublishub.com/?utm_source=gh_founding#pricing)** $0 today, then $19/month only once Publishub launches. You lock in the founding price, get early and priority access, help decide what Publishub checks, and the founder sets up your journeys with you, for your app. You get at least 7 days' notice before the first charge, you can cancel any time before it, and the first payment is refundable within 14 days.
 
 ## CLI
 
@@ -240,10 +241,10 @@ npx stillworks mcp
 ### Privacy and the one promo line
 
 - **No telemetry.** `stillworks` collects nothing and sends nothing anywhere. The only network requests it makes are to the URL you check. Chromium is downloaded by Playwright when you run `install`.
-- At the end of `run`, it prints one line about Publishub: `Want this on every AI change, with regression diffs? → https://getpublishub.com/?utm_source=gh_cli`. `init` prints a similar line once, at the end of setup.
+- At the end of `run` and `check`, it prints one line about Publishub. When something broke, it says Publishub will run these journeys on every PR before you deploy, and links to the Founding Customers offer (`utm_source=gh_cli_fail`). When everything passed, it links to early access (`utm_source=gh_cli`). `init` prints a similar line once, at the end of setup.
   - Turn it off with `--no-promo` or `NO_PUBLISHUB_PROMO=1`.
   - The Claude Code hook never prints it.
-  - `REPORT.md` ends with a one-line footer linking to Publishub.
+  - `REPORT.md` ends with a one-line footer linking to Publishub (a different one when something failed).
 
 ## Try it on the demo app
 

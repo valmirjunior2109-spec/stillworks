@@ -2,6 +2,16 @@
 
 All notable changes to stillworks. Versions follow [semver](https://semver.org/); every version is on [npm](https://www.npmjs.com/package/stillworks).
 
+## Unreleased
+
+### Added
+
+- **Claude Code plugin:** `/plugin marketplace add valmirjunior2109-spec/stillworks`, then `/plugin install stillworks@stillworks`, adds the `/verify` command and the MCP server in one step ([integrations/claude-code-plugin](integrations/claude-code-plugin/README.md)). When releasing, bump the version in `integrations/claude-code-plugin/.claude-plugin/plugin.json` too (a unit test checks it).
+
+### Changed
+
+- The one Publishub line after `run` and `check` now depends on the result. When a journey or page failed, it says Publishub will run these journeys on every PR before deploy and links to the Founding Customers offer (`utm_source=gh_cli_fail`). When everything passed, it links to early access (`utm_source=gh_cli`). `REPORT.md` gets a matching footer (`gh_report_fail` / `gh_report`). Still one line, still off with `--no-promo` or `NO_PUBLISHUB_PROMO=1`.
+
 ## 0.1.7 (2026-11-24)
 
 ### Added

@@ -1,0 +1,15 @@
+{
+  "name": "stillworks",
+  "owner": { "name": "Publishub", "url": "https://getpublishub.com/?utm_source=cc_marketplace" },
+  "metadata": {
+    "description": "Check that your app still works for real users after your AI changes it."
+  },
+  "plugins": [
+    {
+      "name": "stillworks",
+      "source": "./integrations/claude-code-plugin",
+      "description": "A /verify command and the stillworks MCP server: run signup, login and checkout in a real browser, then fix what broke.",
+      "category": "testing"
+    }
+  ]
+}
