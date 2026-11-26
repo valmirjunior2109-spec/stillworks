@@ -10,6 +10,7 @@ All notable changes to stillworks. Versions follow [semver](https://semver.org/)
 
 ### Changed
 
+- The Publishub lines in the CLI, `REPORT.md` and the README now describe what the hosted version adds over the GitHub Action you can already run for free: hourly checks on your live app, alerts, journeys set up 1:1 by the founder and no terminal or CI needed. Same URLs and UTMs; still off with `--no-promo` or `NO_PUBLISHUB_PROMO=1`.
 - The one Publishub line after `run` and `check` now depends on the result. When a journey or page failed, it says Publishub will run these journeys on every PR before deploy and links to the Founding Customers offer (`utm_source=gh_cli_fail`). When everything passed, it links to early access (`utm_source=gh_cli`). `REPORT.md` gets a matching footer (`gh_report_fail` / `gh_report`). Still one line, still off with `--no-promo` or `NO_PUBLISHUB_PROMO=1`.
 
 ## 0.1.7 (2026-11-24)
