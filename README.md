@@ -21,7 +21,7 @@ Claude Code, Cursor and Codex write code fast. The code compiles, passes lint an
 </p>
 <!-- To re-record the GIF, see assets/RECORDING.md -->
 
-**Want it to run by itself on every PR, with regression diffs?** [Join Publishub early access →](https://getpublishub.com/?utm_source=gh_readme_top#early-access) (free waitlist, coming soon)
+**Rather not maintain it yourself?** Publishub sets up your flows with you, watches your live app every hour and alerts you when one breaks. [Reserve a founding spot, $0 today →](https://getpublishub.com/?utm_source=gh_readme_top#pricing) (coming soon)
 
 ## Quickstart
 
@@ -198,11 +198,11 @@ It's a static image: it says your app is tested with stillworks, not that the la
 
 If a step times out and the page logged no errors and no request failed, the journey's selector probably doesn't match the page (different text, a button instead of a link, content that loads later). The terminal and `REPORT.md` say so, and tell your agent to check the screenshot before changing the app.
 
-## Want this automatic on every change?
+## Want someone else to run it?
 
 `stillworks` runs your journeys and writes the report on your machine, when you ask. That part is free and open source, for good.
 
-**[Publishub](https://getpublishub.com/?utm_source=gh_readme)** is building the version that runs by itself. It's coming soon, and nothing below is available yet:
+You can already run it on every PR yourself with the GitHub Action. **[Publishub](https://getpublishub.com/?utm_source=gh_readme)** is for when you'd rather not set up and maintain it, or don't have a terminal at all (Lovable, Bolt, v0). It's coming soon, and nothing in the Publishub column is available yet:
 
 | | stillworks (open source) | Publishub (coming soon) |
 | --- | --- | --- |
@@ -213,6 +213,9 @@ If a step times out and the page logged no errors and no request failed, the jou
 | Compares with your last working version (regression diffs) | — | planned |
 | History of every run | — | planned |
 | Hosted runs on every change and every PR | — | planned |
+| Checks your live app every hour, read-only by default | — | planned |
+| Alerts when a flow breaks (only after two failures in a row) | — | planned |
+| Journeys set up with you, 1:1, no terminal or CI needed | — | planned |
 | Bug reports sent straight to your agent | — | planned |
 
 Two ways in:
@@ -241,7 +244,7 @@ npx stillworks mcp
 ### Privacy and the one promo line
 
 - **No telemetry.** `stillworks` collects nothing and sends nothing anywhere. The only network requests it makes are to the URL you check. Chromium is downloaded by Playwright when you run `install`.
-- At the end of `run` and `check`, it prints one line about Publishub. When something broke, it says Publishub will run these journeys on every PR before you deploy, and links to the Founding Customers offer (`utm_source=gh_cli_fail`). When everything passed, it links to early access (`utm_source=gh_cli`). `init` prints a similar line once, at the end of setup.
+- At the end of `run` and `check`, it prints one line about Publishub. When something broke, it says Publishub will watch these flows on your live app every hour and alert you, and links to the Founding Customers offer (`utm_source=gh_cli_fail`). When everything passed, it links to early access (`utm_source=gh_cli`). `init` prints a similar line once, at the end of setup.
   - Turn it off with `--no-promo` or `NO_PUBLISHUB_PROMO=1`.
   - The Claude Code hook never prints it.
   - `REPORT.md` ends with a one-line footer linking to Publishub (a different one when something failed).
