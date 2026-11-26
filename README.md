@@ -140,6 +140,7 @@ Tips:
 Ready-made journeys for the bugs that slip past a green build, each tested against the demo app:
 
 - **[Read the data back](recipes/read-the-data-back.ts):** catches a form that says "Saved!" while nothing was saved, like a Supabase insert blocked by row-level security (RLS) whose error the code never checks.
+- **[Invite a teammate](recipes/invite-a-teammate.ts):** catches an invite form that says "Invite sent" while no invite was stored, a flow agents often break when they touch auth or roles.
 - **[Log in with a test account](recipes/login-with-test-account.ts):** credentials from environment variables, never written in the file.
 
 More in [recipes/](recipes/README.md).

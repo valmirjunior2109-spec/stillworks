@@ -6,6 +6,7 @@ All notable changes to stillworks. Versions follow [semver](https://semver.org/)
 
 ### Added
 
+- **Recipe: `invite-a-teammate`.** Logs in with the test account, invites `test+<timestamp>@example.com`, reloads the team page and looks for the pending invite. It catches an invite form that says "Invite sent" while nothing was stored. Demo app: a `/team` page for logged-in users and `--break=invite`.
 - **Claude Code plugin:** `/plugin marketplace add valmirjunior2109-spec/stillworks`, then `/plugin install stillworks@stillworks`, adds the `/verify` command and the MCP server in one step ([integrations/claude-code-plugin](integrations/claude-code-plugin/README.md)). When releasing, bump the version in `integrations/claude-code-plugin/.claude-plugin/plugin.json` too (a unit test checks it).
 
 ### Changed

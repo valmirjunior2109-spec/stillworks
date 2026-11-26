@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CLI = join(ROOT, "dist", "cli.js");
 const servers = [];
-let project, healthy, broken, unsaved, brokenPages;
+let project, healthy, broken, unsaved, brokenPages, noInvites;
 
 function startDemo(...args) {
   return new Promise((resolve, reject) => {
@@ -37,7 +37,13 @@ function cli(args, { env = {}, input } = {}) {
 }
 
 before(async () => {
-  [healthy, broken, unsaved, brokenPages] = await Promise.all([startDemo(), startDemo("--break=signup"), startDemo("--break=save"), startDemo("--break=pages")]);
+  [healthy, broken, unsaved, brokenPages, noInvites] = await Promise.all([
+    startDemo(),
+    startDemo("--break=signup"),
+    startDemo("--break=save"),
+    startDemo("--break=pages"),
+    startDemo("--break=invite"),
+  ]);
   project = mkdtempSync(join(tmpdir(), "stillworks-e2e-"));
 });
 
@@ -175,6 +181,18 @@ test("recipes run as written: read-the-data-back catches a save that never happe
   const login = await cli(["run", "--url", healthy, "--config", join(ROOT, "recipes", "login-with-test-account.ts"), "--no-promo"]);
   assert.equal(login.code, 0, login.stdout + login.stderr);
   assert.match(login.stdout, /✓ login/);
+});
+
+test("recipes run as written: invite-a-teammate catches an invite that was never stored", async () => {
+  const recipe = join(ROOT, "recipes", "invite-a-teammate.ts");
+  const ok = await cli(["run", "--url", healthy, "--config", recipe, "--no-promo"]);
+  assert.equal(ok.code, 0, ok.stdout + ok.stderr);
+  assert.match(ok.stdout, /✓ invite-a-teammate/);
+
+  // The API answers 200 and "Invite sent" shows, but the pending invite isn't in the list after a reload.
+  const bad = await cli(["run", "--url", noInvites, "--config", recipe, "--no-promo"]);
+  assert.equal(bad.code, 1, bad.stdout + bad.stderr);
+  assert.match(bad.stdout, /✗ invite-a-teammate\s+failed at step 10\/10: "See the pending invite after reloading"/);
 });
 
 test("check: zero setup, read-only, finds the pages and passes a healthy app", async () => {
