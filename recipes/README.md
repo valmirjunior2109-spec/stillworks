@@ -5,6 +5,7 @@ Journeys for the bugs that slip past a green build. Each file runs as is against
 | Recipe | Catches | Try it |
 | --- | --- | --- |
 | [read-the-data-back.ts](read-the-data-back.ts) | A form that says "Saved!" while nothing was saved, e.g. a **Supabase insert blocked by row-level security (RLS)** whose error the code never reads | `node examples/demo-app/server.mjs --break=save` |
+| [invite-a-teammate.ts](invite-a-teammate.ts) | An invite form that says "Invite sent" while no invite was stored, e.g. after a **roles or RLS change** filters the insert away. Logs in with the test account first | `node examples/demo-app/server.mjs --break=invite` |
 | [login-with-test-account.ts](login-with-test-account.ts) | A broken login, using a test account from environment variables (never a real password in the file) | `node examples/demo-app/server.mjs` |
 
 Then:
