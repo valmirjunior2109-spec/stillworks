@@ -1,4 +1,4 @@
-// A tiny app with signup, login, checkout and notes, for trying stillworks and for its tests.
+// A tiny app with signup, login, checkout, notes and a team page, for trying stillworks and for its tests.
 //   node examples/demo-app/server.mjs                 everything works
 //   node examples/demo-app/server.mjs --break=signup  the kind of bug an AI agent ships: the signup API
 //                                                     was "refactored" to read `emailAddress`, the form
@@ -9,12 +9,18 @@
 //   node examples/demo-app/server.mjs --break=pages   what `stillworks check` finds with no setup: a "Docs" link to a page
 //                                                     that doesn't exist, a JavaScript crash on /notes and a 500
 //                                                     from the API /checkout calls when it loads.
+//   node examples/demo-app/server.mjs --break=invite  inviting a teammate answers 200 and says "Invite sent", but
+//                                                     the invite is never stored, like a roles check that quietly
+//                                                     filters the insert away. The pending invite never shows up.
 // PORT=4173 by default; PORT=0 picks a free port. Prints "demo app ready on <url>" when listening.
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 
 const broken = new Set(process.argv.filter((a) => a.startsWith("--break=")).flatMap((a) => a.slice(8).split(",")));
 const users = new Map([["demo@example.com", "demo-password"]]);
 const notes = [];
+const invites = [];
+const sessions = new Map();
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const page = (title, body) => `<!doctype html>
@@ -52,7 +58,26 @@ const routes = {
   "GET /signup": () => form("signup", "Create your account", [["Email", "email", "email"], ["Password", "password", "password"]], "Create account", "/api/signup",
     "`<h1>Welcome, ${json.email}!</h1><p class='note'>Your account is ready.</p>`"),
   "GET /login": () => form("login", "Log in", [["Email", "email", "email"], ["Password", "password", "password"]], "Log in", "/api/login",
-    "`<h1>Dashboard</h1><p class='note'>Signed in as ${json.email}.</p>`"),
+    "`<h1>Dashboard</h1><p class='note'>Signed in as ${json.email}.</p><nav><a href='/team'>Team</a></nav>`"),
+  // Only for people who are logged in: the session cookie is set by /api/login.
+  "GET /team": (_body, user) => user ? page("Team", `<h1>Team members</h1>
+<ul id="members">
+  <li>${escapeHtml(user)} · Owner</li>
+  ${invites.map((email) => `<li>${escapeHtml(email)} · Invite pending</li>`).join("\n  ")}
+</ul>
+<form id="invite-form">
+  <label for="email">Email</label><input id="email" name="email" type="email" required>
+  <button type="submit">Send invite</button>
+</form>
+<p id="status" class="note" role="status"></p>
+<script>
+  document.getElementById("invite-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = new FormData(event.target).get("email");
+    const res = await fetch("/api/invites", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
+    if (res.ok) document.getElementById("status").textContent = "Invite sent to " + email + ".";
+  });
+</script>`) : page("Team", `<h1>Team members</h1><p class="note">Log in to see your team. <a href="/login">Log in</a></p>`),
   "GET /checkout": () =>
     form("checkout", "Pro plan · $19/month", [["Card number", "card", "text"]], "Pay $19", "/api/checkout",
       "`<h1>Payment successful</h1><p class='note'>Receipt ${json.receipt}.</p>`").replace(
@@ -96,7 +121,16 @@ ${broken.has("pages") ? "<script>window.editor.mount('#notes');</script>" : ""}
   "POST /api/login": (body) => {
     const email = String(body.email).toLowerCase();
     if (broken.has("login") || users.get(email) !== body.password) return [401, { error: "Wrong email or password." }];
-    return [200, { email }];
+    const token = randomUUID();
+    sessions.set(token, email);
+    return [200, { email }, { "set-cookie": `session=${token}; Path=/; HttpOnly; SameSite=Lax` }];
+  },
+  "POST /api/invites": (body, user) => {
+    if (!user) return [401, { error: "Log in first." }];
+    const email = String(body.email ?? "").toLowerCase();
+    // The bug: the invite is filtered away (think a roles check that matches no rows), but the handler still answers 200.
+    if (!broken.has("invite") && !invites.includes(email)) invites.push(email);
+    return [200, { invited: email }];
   },
   "POST /api/checkout": (body) => {
     if (broken.has("checkout") || String(body.card).replace(/\s/g, "") !== "4242424242424242") return [402, { error: "Card declined." }];
@@ -111,15 +145,17 @@ const server = createServer(async (req, res) => {
     res.writeHead(404, { "content-type": "text/plain" });
     return res.end("Not found");
   }
+  const token = /(?:^|;\s*)session=([^;]+)/.exec(req.headers.cookie ?? "")?.[1];
+  const user = sessions.get(token);
   try {
     if (req.method === "GET") {
       res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-      return res.end(handler());
+      return res.end(handler({}, user));
     }
     let raw = "";
     for await (const chunk of req) raw += chunk;
-    const [status, json] = handler(JSON.parse(raw || "{}"));
-    res.writeHead(status, { "content-type": "application/json" });
+    const [status, json, headers = {}] = handler(JSON.parse(raw || "{}"), user);
+    res.writeHead(status, { "content-type": "application/json", ...headers });
     res.end(JSON.stringify(json));
   } catch (error) {
     console.error(`${req.method} ${path} crashed:`, error);
