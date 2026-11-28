@@ -26,7 +26,7 @@ stillworks is a free, open-source CLI that runs your critical user journeys (sig
 
 It ships with a `/verify` command and a Stop hook for Claude Code, a Cursor rule, an AGENTS.md snippet for Codex and Copilot, and a GitHub Action for Vercel preview deploys. MIT licensed, no telemetry, works on macOS, Linux and Windows.
 
-It's made by the team building Publishub, which will run these checks automatically on every change, with regression diffs (coming soon, early access open).
+It's the open-source engine behind Publishub, which checks your app's public pages for free (Publishub Check), re-checks them every day and emails you only when something new breaks (Publishub Monitor, beta), and is building hosted checks of your login, sign-up and checkout journeys (early access open).
 
 **First comment (post it yourself after launching)**
 

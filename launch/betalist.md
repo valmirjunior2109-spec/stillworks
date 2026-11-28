@@ -6,7 +6,7 @@ BetaList lists **pre-launch startups**, not open-source tools, so submit **Publi
 
 **URL:** https://getpublishub.com/?utm_source=betalist
 
-**One-liner:** Your AI writes the code. Publishub checks it still works.
+**One-liner:** Check that your AI-built app still works, before your users do.
 
 **Pitch**
 
