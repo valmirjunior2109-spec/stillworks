@@ -21,7 +21,7 @@ Claude Code, Cursor and Codex write code fast. The code compiles, passes lint an
 </p>
 <!-- To re-record the GIF, see assets/RECORDING.md -->
 
-**Rather not maintain it yourself?** Publishub sets up your flows with you, watches your live app every hour and alerts you when one breaks. [Reserve a founding spot, $0 today →](https://getpublishub.com/?utm_source=gh_readme_top#pricing) (coming soon)
+**stillworks is the open-source engine behind [Publishub](https://getpublishub.com/?utm_source=gh_readme_top)**: check that your AI-built app still works, before your users do. No terminal? **Publishub Check** tests your deployed app free in the browser, and **Publishub Monitor** re-checks it every day and emails you only when something new breaks (beta). Login, sign-up and checkout journeys set up for you are in development: [reserve a Founding Customer spot, $0 today →](https://getpublishub.com/founding?utm_source=gh_readme_top)
 
 ## Quickstart
 
@@ -44,7 +44,7 @@ npx stillworks run --url http://localhost:3000   # runs every journey in a real 
 
 Both exit with code `1` when something breaks. Open `verify-report/REPORT.md` and paste it into your agent.
 
-> **No terminal?** If you build with Lovable, Bolt or v0, [check your deployed app online, free](https://getpublishub.com/check?utm_source=gh_readme_check): same idea, in your browser, no install.
+> **No terminal?** If you build with Lovable, Bolt or v0, [check your deployed app online with Publishub Check, free](https://getpublishub.com/check?utm_source=gh_readme_check): same idea, in your browser, no install. From the report you can turn on a daily check.
 
 Works on macOS, Linux and Windows with Node.js 20 or newer.
 
@@ -202,26 +202,24 @@ If a step times out and the page logged no errors and no request failed, the jou
 
 `stillworks` runs your journeys and writes the report on your machine, when you ask. That part is free and open source, for good.
 
-You can already run it on every PR yourself with the GitHub Action. **[Publishub](https://getpublishub.com/?utm_source=gh_readme)** is for when you'd rather not set up and maintain it, or don't have a terminal at all (Lovable, Bolt, v0). It's coming soon, and nothing in the Publishub column is available yet:
+You can already run it on every PR yourself with the GitHub Action. **[Publishub](https://getpublishub.com/?utm_source=gh_readme)** is the hosted side, for when you'd rather not set up and maintain it, or don't have a terminal at all (Lovable, Bolt, v0). Part of it is available today; the rest is marked as planned:
 
-| | stillworks (open source) | Publishub (coming soon) |
+| | stillworks (open source) | Publishub |
 | --- | --- | --- |
-| Run journeys in a real browser | ✅ | planned |
-| Screenshots, console errors, failed requests | ✅ | planned |
-| Report written as a prompt for your agent | ✅ | planned |
+| Check public pages in a real browser, zero setup | ✅ `npx stillworks check` | ✅ Publishub Check, free, in the browser |
+| Report written as a prompt for your agent | ✅ | ✅ |
+| Run your sign-up, login and checkout journeys | ✅ you write them | planned, set up with you |
 | Runs on your machine and in your CI | ✅ | — |
-| Compares with your last working version (regression diffs) | — | planned |
-| History of every run | — | planned |
-| Hosted runs on every change and every PR | — | planned |
-| Checks your live app every hour, read-only by default | — | planned |
-| Alerts when a flow breaks (only after two failures in a row) | — | planned |
-| Journeys set up with you, 1:1, no terminal or CI needed | — | planned |
-| Bug reports sent straight to your agent | — | planned |
+| Checks every day, emails only when something new breaks | — | ✅ Publishub Monitor (public pages, beta) |
+| Compared with the previous run | — | ✅ public pages · planned for journeys |
+| Journeys checked every hour on your live app, read-only by default | — | planned |
+| Journeys set up with you, 1:1, no terminal or CI needed | — | planned (Founding Customers) |
 
-Two ways in:
+Three ways in:
 
-- **[Join the free waitlist →](https://getpublishub.com/?utm_source=gh_readme#early-access)** Product updates and an email when it launches. No payment.
-- **[Become a Founding Customer →](https://getpublishub.com/?utm_source=gh_founding#pricing)** $0 today, then $19/month only once Publishub launches. You lock in the founding price, get early and priority access, help decide what Publishub checks, and the founder sets up your journeys with you, for your app. You get at least 7 days' notice before the first charge, you can cancel any time before it, and the first payment is refundable within 14 days.
+- **[Check your app free →](https://getpublishub.com/check?utm_source=gh_readme)** Publishub Check, then turn on the daily Publishub Monitor from the report.
+- **[Join the free waitlist →](https://getpublishub.com/?utm_source=gh_readme#early-access)** Product updates and an email when the journeys launch. No payment.
+- **[Become a Founding Customer →](https://getpublishub.com/founding?utm_source=gh_founding)** $0 today, then $19/month only once Publishub's journey checks launch. You lock in the founding price, get early and priority access, help decide what Publishub checks, and the founder sets up your journeys with you, for your app. You get at least 7 days' notice before the first charge, you can cancel any time before it, and the first payment is refundable within 14 days.
 
 ## CLI
 
@@ -270,4 +268,4 @@ If stillworks caught a bug for you, a ⭐ on the repo helps other people buildin
 
 ## License
 
-[MIT](LICENSE). Made by the team building [Publishub](https://getpublishub.com/?utm_source=gh_readme).
+[MIT](LICENSE). stillworks is the open-source engine behind [Publishub](https://getpublishub.com/?utm_source=gh_readme): check that your AI-built app still works, before your users do.

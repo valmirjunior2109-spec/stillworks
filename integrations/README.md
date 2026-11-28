@@ -116,7 +116,7 @@ Each tool adds remote MCP servers in its own place, and these screens change oft
   1. **Build the Lovable app from Claude Code, Cursor or Codex** with [Lovable's own MCP server](https://docs.lovable.dev), and add stillworks next to it (local or hosted). The same agent builds in Lovable and checks the published app.
   2. **Check every change from GitHub.** Connect the project to GitHub in Lovable (it syncs every change), then add the [stillworks GitHub Action](github-actions/stillworks.yml) to that repository, pointed at your published URL. The same works for Bolt projects exported to GitHub.
 
-No MCP at all? Paste your published URL into [Publishub's free check](https://getpublishub.com/check?utm_source=gh_integrations).
+No MCP at all? Paste your published URL into [Publishub Check](https://getpublishub.com/check?utm_source=gh_integrations), free, and turn on the daily check from the report.
 
 ### What the hosted server will and won't do
 
